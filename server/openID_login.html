@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Facebook Connect For Chrome Extension</title>
-    <script type="text/javascript" src="background.js"></script>
-    <script type="text/javascript" src="popup.js"></script>
+<title>Facebook Login JavaScript Example</title>
+<meta charset="UTF-8">
 </head>
-
 <body>
 <script>
   console.log("Hello");
@@ -47,9 +45,7 @@
     cookie     : true,  // enable cookies to allow the server to access 
                         // the session
     xfbml      : true,  // parse social plugins on this page
-    version    : 'v2.1', // use version 2.1
-    oauth      : true,
-    channelUrl : 'http://localhost:8888/' 
+    version    : 'v2.1' // use version 2.1
   });
 
   // Now that we've initialized the JavaScript SDK, we call 
