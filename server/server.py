@@ -5,7 +5,8 @@ import tornado.web
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        self.write("Hello, world")
+        # self.write("Hello, world")
+        self.render("openID_login.html")
 
 application = tornado.web.Application([
     (r"/", MainHandler),
