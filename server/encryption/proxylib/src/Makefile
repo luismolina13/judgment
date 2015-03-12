@@ -63,6 +63,11 @@ ${PROXYLIBTESTWITHMIRACL}: ${PROXYLIBWITHMIRACL} ${PROXYLIBTESTOBJ} ${PROXYLIBTE
 #library: ${LIBRARYOBJ}
 #	/usr/bin/ar cq proxyfs.a ${LIBRARYOBJ}
 
+python: proxylib_python.cpp
+	 g++ -I../../miracl -O2 -c -fPIC proxylib_python.cpp
+	g++ -I../../miracl -O2 -lstdc++ -shared -Wl,-soname,proxylib_python.so -o proxylib_python.so proxylib_python.o proxylibmiracl.a
+	python test.py 
+
 clean:
 	rm -rf *.o a.out ${MIRACLPATH}/miracl.a proxylib.a
 
