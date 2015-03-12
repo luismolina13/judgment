@@ -3,6 +3,52 @@
 #include "proxylib.h"
 #include "proxylib_pre1.h"
 #include "proxylib_pre2.h"
+extern Miracl precision;
+ 
+#include <string>
+
+std::string string_to_hex(const std::string& input)
+{
+    static const char* const lut = "0123456789ABCDEF";
+    size_t len = input.length();
+
+    std::string output;
+    output.reserve(2 * len);
+    for (size_t i = 0; i < len; ++i)
+    {
+        const unsigned char c = input[i];
+        output.push_back(lut[c >> 4]);
+        output.push_back(lut[c & 15]);
+    }
+    return output;
+}
+
+#include <algorithm>
+#include <stdexcept>
+
+std::string hex_to_string(const std::string& input)
+{
+    static const char* const lut = "0123456789ABCDEF";
+    size_t len = input.length();
+    if (len & 1) throw std::invalid_argument("odd length");
+
+    std::string output;
+    output.reserve(len / 2);
+    for (size_t i = 0; i < len; i += 2)
+    {
+        char a = input[i];
+        const char* p = std::lower_bound(lut, lut + 16, a);
+        if (*p != a) throw std::invalid_argument("not a hex digit");
+
+        char b = input[i + 1];
+        const char* q = std::lower_bound(lut, lut + 16, b);
+        if (*q != b) throw std::invalid_argument("not a hex digit");
+
+        output.push_back(((p - lut) << 4) | (q - lut));
+    }
+    return output;
+}
+
 
 using namespace std;
 
@@ -10,6 +56,7 @@ int testNum = 0, testsSuccess = 0;
 
 int main() {
 	cout << "HELLO WORLD" << endl;
+        cout << string_to_hex("Hello World!") << endl;
 	if (initLibrary() == FALSE) {
     		cout << " ... FAILED" << endl;
   	} else {
@@ -44,7 +91,13 @@ int main() {
   if (PRE1_keygen(gParams, pk1, sk1) == FALSE) {
     cout << " ... FAILED" << endl;
   } else {
-    cout << " ... OK" << endl;
+    cout << "\nBinary size: " << pk1.getSerializedSize(SERIALIZE_BINARY) << endl;
+    char buffer[1000];
+    pk1.serialize(SERIALIZE_HEXASCII, buffer, 1000);
+    printf("\n%s\n", buffer);
+    sk1.serialize(SERIALIZE_HEXASCII, buffer, 1000);
+    printf("\n%s\n", buffer);
+    cout << "\n ... OK" << endl;
     testsSuccess++;
   }
 
@@ -57,6 +110,97 @@ int main() {
     cout << " ... OK" << endl;
     testsSuccess++;
   }
+
+  //
+  // First-level encryption/decryption test
+  //
+  cout << ++testNum << ". First-level encryption/decryption test ";
+  Big plaintext1 = 100;
+  miracl *mip=&precision;
+  Big x;
+  string pt1 = string_to_hex("http://www.cplusplus.com/reference/cstring/strcpy/");
+  char c[1000];
+  strcpy(c, pt1.c_str());
+  mip->IOBASE=16;
+  x=c;
+
+  Big plaintext2 = 0;
+  ProxyCiphertext_PRE1 ciphertext;
+  if (PRE1_level2_encrypt(gParams, x, pk1, ciphertext) == FALSE) {
+    cout << " ... FAILED" << endl;
+  } else {
+    // Decrypt the ciphertext
+    if (PRE1_decrypt(gParams, ciphertext, sk1, plaintext2) == FALSE) {
+      cout << " ... FAILED" << endl;
+    } else {
+      if (x != plaintext2) {
+        cout << " ... FAILED" << endl;
+      } else {
+        cout << " ... OK" << endl;
+        mip->IOBASE=16;
+        char c2[1000];
+        c2 << plaintext2;
+	string result(c2);
+	cout << hex_to_string(result) << endl;
+        printf("\n%s\n", c2);
+        testsSuccess++;
+      }
+    }
+  }
+
+  //
+  // Re-encryption key generation test
+  //
+  cout << ++testNum << ". Re-encryption key generation test ";
+  ECn delKey;
+  // Generate a delegation key from user1->user2
+  if (PRE1_delegate(gParams, pk2, sk1, delKey) == FALSE) {
+    cout << " ... FAILED" << endl;
+  } else {
+    cout << " ... OK" << endl;
+    testsSuccess++;
+  }
+
+  //
+  // Re-encryption/decryption test
+  //
+  ProxyCiphertext_PRE1 newCiphertext;
+  plaintext2 = 0;
+  cout << ++testNum << ". Re-encryption/decryption test ";
+  // Re-encrypt ciphertext from user1->user2 using delKey
+  // We make use of the ciphertext generated in the previous test.
+  if (PRE1_reencrypt(gParams, ciphertext, delKey, newCiphertext) == FALSE) {
+    cout << " ... FAILED1" << endl;
+  } else {
+    // Decrypt the ciphertext
+    if (PRE1_decrypt(gParams, newCiphertext, sk2, plaintext2) == FALSE) {
+      cout << " ... FAILED2" << endl;
+    } else {
+      mip->IOBASE=16;
+        char c3[1000];
+        c3 << plaintext2;
+        string result2(c3);
+        cout << hex_to_string(result2) << endl;
+      if (x != plaintext2) {
+      //  mip->IOBASE=16;
+      //  char c2[100];
+      //  c2 << plaintext2;
+      //  string result(c2);
+     //   cout << "After re-encryption" << hex_to_string(result) << endl;
+	cout << " ... FAILED3" << endl;
+      } else {
+        cout << " ... OK" << endl;
+	mip->IOBASE=16;
+        char c2[1000];
+        c2 << plaintext2;
+        string result(c2);
+        cout << "After re-encryption" << hex_to_string(result) << endl;
+       // printf(2nd time "\n%s\n", c2);
+        testsSuccess++;
+      }
+    }
+  }
+
 }
 
 /*
