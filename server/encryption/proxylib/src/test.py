@@ -8,9 +8,14 @@ class Foo(object):
     def bar(self, s):
         lib.Foo_bar(self.obj, s)
     
-    def generate_key(self):
-        lib.Foo_generate_key(self.obj)
+    def generate_key(self, fname):
+        lib.Foo_generate_key(self.obj, fname)
+
+    def generate_reencrypt_key(self, pname, sname):
+        lib.Foo_generate_reencrypt_key(self.obj, pname, sname)
 
 f = Foo()
 f.bar("Luis") #and you will see "Hello" on the screen
-f.generate_key()
+f.generate_key("LuisKey")
+f.generate_key("FriendKey")
+f.generate_reencrypt_key("FriendKey_p", "LuisKey_s")
