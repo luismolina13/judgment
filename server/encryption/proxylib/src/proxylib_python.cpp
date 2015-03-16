@@ -53,6 +53,54 @@ class Foo{
 	    return output;
 	}
 
+        void save_file(char* file_name, char* buffer, int size) {
+            ofstream file(file_name, ios::binary | ios::out);
+            file << size << '\n';
+            file.write(buffer, size);
+            file.close();
+        }
+
+        void read_file(char* file_name, char* &buffer, int& size) {
+            ifstream file(file_name, ios::binary | ios::in);
+            size = 0;
+            file >> size;
+            char junk[1];
+            buffer = new char[size];
+            file.read(junk, 1);
+            file.read(buffer, size);
+            file.close();
+        }
+        
+        ProxyPK_PRE1 read_public_key(char* name) {
+            ProxyPK_PRE1 pk;
+            ifstream file(name, ios::binary | ios::in);
+            int size = 0;
+            file >> size;
+            char junk[1];
+            char* buffer = new char[size];
+            file.read(junk, 1);
+            file.read(buffer, size);
+            file.close();
+            pk.deserialize(SERIALIZE_BINARY, buffer, size);
+            delete [] buffer;
+            return pk;
+        }
+
+        ProxySK_PRE1 read_secret_key(char* name) {
+            ProxySK_PRE1 sk;
+            ifstream file(name, ios::binary | ios::in);
+            int size = 0;
+            file >> size;
+            char junk[1];
+            char* buffer = new char[size];
+            file.read(junk, 1);
+            file.read(buffer, size);
+            file.close();
+            sk.deserialize(SERIALIZE_BINARY, buffer, size);
+            delete [] buffer;
+            return sk;
+        }
+
 
 	CurveParams gParams;
     public:
@@ -105,8 +153,8 @@ class Foo{
             pfile.close();
             //for (int i = 0; i < pSize; i++)           
             //    cout << (int)buffer[i] << ' ';            
-            //pk1.serialize(SERIALIZE_HEXASCII, buffer, 1000);
-            //printf("\n%s\n", buffer);
+            pk1.serialize(SERIALIZE_HEXASCII, buffer, 1000);
+            printf("\n%s\n", buffer);
 
             int sSize = sk1.serialize(SERIALIZE_BINARY, buffer, 1000);
             ofstream sfile(secret_file.c_str(), ios::binary | ios::out);
@@ -121,32 +169,12 @@ class Foo{
 
         void generate_reencrypt_key(char* pname, char* sname) {
             char buffer[1000];
-            ProxyPK_PRE1 pk;
-            ifstream pfile(pname, ios::binary | ios::in);
-            int pSize = 0;
-            pfile >> pSize;
-            cout << "Reencrypt: " << pSize << endl;
-            char junk[1];
-            pfile.read(junk, 1);
-            pfile.read(buffer, pSize);
-            pfile.close();
-            //for (int i = 0; i < pSize; i++)  
-            //    cout << (int)buffer[i] << ' ';
-            pk.deserialize(SERIALIZE_BINARY, buffer, pSize);
-            //pk.serialize(SERIALIZE_HEXASCII, buffer, 1000);
-            //printf("\n%s\n", buffer);
-
-            ProxySK_PRE1 sk;
+            ProxyPK_PRE1 pk = read_public_key(pname);
+            ProxySK_PRE1 sk = read_secret_key(sname);
             
-            ifstream sfile(sname, ios::binary | ios::in);
-            int sSize = 0;
-            sfile >> sSize;
-            cout << "Reencrypt Secret: " << sSize << endl;
-            sfile.read(junk, 1);
-            sfile.read(buffer, sSize);
-            sfile.close();
-            sk.deserialize(SERIALIZE_BINARY, buffer, sSize);
             sk.serialize(SERIALIZE_HEXASCII, buffer, 1000);
+            printf("\n%s\n", buffer);
+            pk.serialize(SERIALIZE_HEXASCII, buffer, 1000);
             printf("\n%s\n", buffer);
 
             ECn delKey;
@@ -166,6 +194,89 @@ class Foo{
             rfile.close();
             
         }
+
+        void encrypt(char* public_key, char* plain_text, char* file_name) {
+            cout << "...Start encryption" << endl;
+            miracl *mip=&precision;
+            Big plaintext;
+            string plaintext_hex = string_to_hex(string(plain_text));
+            char* text = new char[plaintext_hex.size() + 1];
+            strncpy(text, plaintext_hex.c_str(), plaintext_hex.size() + 1);
+            mip->IOBASE = 16;
+            plaintext = text;
+
+            ProxyPK_PRE1 pk = read_public_key(public_key);
+
+            ProxyCiphertext_PRE1 ciphertext;
+            if (PRE1_level2_encrypt(gParams, plaintext, pk, ciphertext) == FALSE) {
+                cout << " ... FAILED ENCRYPTION" << endl;
+            } else {
+                // Save the ciphertext
+                int size = ciphertext.getSerializedSize(SERIALIZE_BINARY);
+                cout << size << endl;
+                char* buffer = new char[size*2];
+                int size2 = ciphertext.serialize(SERIALIZE_BINARY, buffer, size*2);
+                cout << size2 << endl;
+                for (int i = 0; i < size2; i++)           
+                    cout << (int)buffer[i] << ' ';            
+                save_file(file_name, buffer, size2);
+                delete [] buffer;
+            }
+            cout << "...Finish encryption" << endl; 
+            /*
+            // Decrypt the ciphertext
+            if (PRE1_decrypt(gParams, ciphertext, sk, plaintext2) == FALSE) {
+              cout << " ... FAILED" << endl;
+            } else {
+              if (plaintext != plaintext2) {
+                cout << " ... FAILED" << endl;
+              } else {
+                cout << " ... OK" << endl;
+                mip->IOBASE=16;
+                char c2[1000];
+                c2 << plaintext2;
+                string result(c2);
+                cout << hex_to_string(result) << endl;
+                printf("\n%s\n", c2);
+              }
+            }
+          }
+            */
+
+        }
+
+        char* decrypt(char* secret_key, char* file_name) {
+            cout << "...Start decryption" << endl;
+            ProxySK_PRE1 sk = read_secret_key(secret_key);
+            miracl *mip=&precision;
+            Big plaintext = 0;
+
+            ProxyCiphertext_PRE1 ciphertext;
+            char* buffer;
+            int size;
+            read_file(file_name, buffer, size);
+            cout << size << endl;
+            for (int i = 0; i < size; i++)           
+                cout << (int)buffer[i] << ' ';            
+            ciphertext.deserialize(SERIALIZE_BINARY, buffer, size);
+            delete [] buffer;
+
+            // Decrypt the ciphertext
+            if (PRE1_decrypt(gParams, ciphertext, sk, plaintext) == FALSE) {
+                cout << " ... FAILED" << endl;
+            } else {
+                cout << " ... OK" << endl;
+                mip->IOBASE=16;
+                char* c2 = new char[size*2];
+                c2 << plaintext;
+                string result(c2);
+                cout << hex_to_string(result) << endl;
+                printf("\n%s\n", c2);
+                delete [] c2;
+                return "It worked";
+            }
+            return "\0";
+        }
 };
 
 extern "C" {
@@ -173,6 +284,8 @@ extern "C" {
     void Foo_bar(Foo* foo, char* str){ foo->bar(str); }
     void Foo_generate_key(Foo* foo, char* fname) { foo->generate_key(fname); }
     void Foo_generate_reencrypt_key(Foo* foo, char* pname, char* sname) { foo->generate_reencrypt_key(pname, sname); }
+    void Foo_encrypt(Foo* foo, char* public_key, char* plain_text, char* file_name) { foo->encrypt(public_key, plain_text, file_name); }
+    char* Foo_decrypt(Foo* foo, char* secret_key, char* file_name) { foo->decrypt(secret_key, file_name); }
 }
 
 
