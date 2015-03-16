@@ -17,8 +17,11 @@ class Foo(object):
     def encrypt(self, public_key, plain_text, file_name):
         lib.Foo_encrypt(self.obj, public_key, plain_text, file_name)
 
-    def decrypt(self, secret_key, file_name):
-        return lib.Foo_decrypt(self.obj, secret_key, file_name)
+    def reencrypt(self, del_key, enc_file_name, reenc_file_name):
+        lib.Foo_reencrypt(self.obj, del_key, enc_file_name, reenc_file_name)
+    
+    def decrypt(self, secret_key, enc_file_name, dec_file_name):
+        lib.Foo_decrypt(self.obj, secret_key, enc_file_name, dec_file_name)
 
 f = Foo()
 f.bar("Luis") #and you will see "Hello" on the screen
@@ -26,4 +29,5 @@ f.generate_key("LuisKey")
 f.generate_key("FriendKey")
 f.generate_reencrypt_key("FriendKey_p", "LuisKey_s")
 f.encrypt("LuisKey_p", "http://www.cplusplus.com/reference/cstring/strcpy/", "encryption")
-print f.decrypt("LuisKey_s", "encryption")
+f.reencrypt("LuisKey_sFriendKey_p", "encryption", "reencryption")
+f.decrypt("FriendKey_s", "reencryption", "decryption")

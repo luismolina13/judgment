@@ -86,6 +86,21 @@ class Foo{
             return pk;
         }
 
+        ECn read_del_key(char* name) {
+            ECn delKey;
+            ifstream file(name, ios::binary | ios::in);
+            int size = 0;
+            file >> size;
+            char junk[1];
+            char* buffer = new char[size];
+            file.read(junk, 1);
+            file.read(buffer, size);
+            file.close();
+            DeserializeDelegationKey_PRE1(delKey, SERIALIZE_BINARY, buffer, size);
+            delete [] buffer;
+            return delKey;
+        }
+
         ProxySK_PRE1 read_secret_key(char* name) {
             ProxySK_PRE1 sk;
             ifstream file(name, ios::binary | ios::in);
@@ -195,6 +210,16 @@ class Foo{
             
         }
 
+        void save_ciphertext(ProxyCiphertext_PRE1 ciphertext, char* file_name) {
+            int size = ciphertext.getSerializedSize(SERIALIZE_BINARY);
+            char* buffer = new char[size*2];
+            int size2 = ciphertext.serialize(SERIALIZE_BINARY, buffer, size*2);
+            //for (int i = 0; i < size2; i++)           
+            //    cout << (int)buffer[i] << ' ';            
+            save_file(file_name, buffer, size2);
+            delete [] buffer;
+        }
+
         void encrypt(char* public_key, char* plain_text, char* file_name) {
             cout << "...Start encryption" << endl;
             miracl *mip=&precision;
@@ -212,54 +237,47 @@ class Foo{
                 cout << " ... FAILED ENCRYPTION" << endl;
             } else {
                 // Save the ciphertext
-                int size = ciphertext.getSerializedSize(SERIALIZE_BINARY);
-                cout << size << endl;
-                char* buffer = new char[size*2];
-                int size2 = ciphertext.serialize(SERIALIZE_BINARY, buffer, size*2);
-                cout << size2 << endl;
-                for (int i = 0; i < size2; i++)           
-                    cout << (int)buffer[i] << ' ';            
-                save_file(file_name, buffer, size2);
-                delete [] buffer;
+                save_ciphertext(ciphertext, file_name);
             }
             cout << "...Finish encryption" << endl; 
-            /*
-            // Decrypt the ciphertext
-            if (PRE1_decrypt(gParams, ciphertext, sk, plaintext2) == FALSE) {
-              cout << " ... FAILED" << endl;
-            } else {
-              if (plaintext != plaintext2) {
-                cout << " ... FAILED" << endl;
-              } else {
-                cout << " ... OK" << endl;
-                mip->IOBASE=16;
-                char c2[1000];
-                c2 << plaintext2;
-                string result(c2);
-                cout << hex_to_string(result) << endl;
-                printf("\n%s\n", c2);
-              }
-            }
-          }
-            */
-
         }
 
-        char* decrypt(char* secret_key, char* file_name) {
-            cout << "...Start decryption" << endl;
-            ProxySK_PRE1 sk = read_secret_key(secret_key);
-            miracl *mip=&precision;
-            Big plaintext = 0;
-
+        ProxyCiphertext_PRE1 read_ciphertext(char* file_name) {
             ProxyCiphertext_PRE1 ciphertext;
             char* buffer;
             int size;
             read_file(file_name, buffer, size);
             cout << size << endl;
-            for (int i = 0; i < size; i++)           
-                cout << (int)buffer[i] << ' ';            
+            //for (int i = 0; i < size; i++)           
+            //    cout << (int)buffer[i] << ' ';            
             ciphertext.deserialize(SERIALIZE_BINARY, buffer, size);
             delete [] buffer;
+            return ciphertext;
+        }
+
+        void reencrypt(char* del_key, char* enc_file_name, char* reenc_file_name) {
+            cout << "...Start reencryption" << endl;
+            // Re-encryption/decryption test
+            ProxyCiphertext_PRE1 ciphertext = read_ciphertext(enc_file_name);
+            ProxyCiphertext_PRE1 newCiphertext;
+            ECn delKey = read_del_key(del_key);
+            // Re-encrypt ciphertext from user1->user2 using delKey
+            // We make use of the ciphertext generated in the previous test.
+            if (PRE1_reencrypt(gParams, ciphertext, delKey, newCiphertext) == FALSE) {
+                cout << " ... FAILED1" << endl;
+            } else {
+                save_ciphertext(newCiphertext, reenc_file_name);
+            }
+            cout << "...Finish reencryption" << endl;
+        }
+
+        void decrypt(char* secret_key, char* enc_file_name, char* dec_file_name) {
+            cout << "...Start decryption" << endl;
+            ProxySK_PRE1 sk = read_secret_key(secret_key);
+            miracl *mip=&precision;
+            Big plaintext = 0;
+
+            ProxyCiphertext_PRE1 ciphertext = read_ciphertext(enc_file_name);
 
             // Decrypt the ciphertext
             if (PRE1_decrypt(gParams, ciphertext, sk, plaintext) == FALSE) {
@@ -267,15 +285,18 @@ class Foo{
             } else {
                 cout << " ... OK" << endl;
                 mip->IOBASE=16;
+                int size = ciphertext.getSerializedSize(SERIALIZE_BINARY);
                 char* c2 = new char[size*2];
                 c2 << plaintext;
                 string result(c2);
                 cout << hex_to_string(result) << endl;
+                ofstream dec_file(dec_file_name);
+                dec_file << hex_to_string(result);
+                dec_file.close();
                 printf("\n%s\n", c2);
                 delete [] c2;
-                return "It worked";
             }
-            return "\0";
+            cout << "...Finish decryption" << endl;
         }
 };
 
@@ -285,7 +306,8 @@ extern "C" {
     void Foo_generate_key(Foo* foo, char* fname) { foo->generate_key(fname); }
     void Foo_generate_reencrypt_key(Foo* foo, char* pname, char* sname) { foo->generate_reencrypt_key(pname, sname); }
     void Foo_encrypt(Foo* foo, char* public_key, char* plain_text, char* file_name) { foo->encrypt(public_key, plain_text, file_name); }
-    char* Foo_decrypt(Foo* foo, char* secret_key, char* file_name) { foo->decrypt(secret_key, file_name); }
+    void Foo_reencrypt(Foo* foo, char* del_key, char* enc_file_name, char* reenc_file_name) { foo->reencrypt(del_key, enc_file_name, reenc_file_name); }
+    void Foo_decrypt(Foo* foo, char* secret_key, char* enc_file_name, char* dec_file_name) { foo->decrypt(secret_key, enc_file_name, dec_file_name); }
 }
 
 
