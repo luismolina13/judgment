@@ -13,7 +13,7 @@ extern Miracl precision;
 
 using namespace std;
 
-class Foo{
+class Proxylib{
 	std::string string_to_hex(const std::string& input)
 	{
 	    static const char* const lut = "0123456789ABCDEF";
@@ -119,7 +119,7 @@ class Foo{
 
 	CurveParams gParams;
     public:
-	Foo() {
+	Proxylib() {
 		//cout << "HELLO WORLD" << endl;
 		cout << string_to_hex("Hello World!") << endl;
 		if (initLibrary() == FALSE) {
@@ -301,13 +301,13 @@ class Foo{
 };
 
 extern "C" {
-    Foo* Foo_new(){ return new Foo(); }
-    void Foo_bar(Foo* foo, char* str){ foo->bar(str); }
-    void Foo_generate_key(Foo* foo, char* fname) { foo->generate_key(fname); }
-    void Foo_generate_reencrypt_key(Foo* foo, char* pname, char* sname) { foo->generate_reencrypt_key(pname, sname); }
-    void Foo_encrypt(Foo* foo, char* public_key, char* plain_text, char* file_name) { foo->encrypt(public_key, plain_text, file_name); }
-    void Foo_reencrypt(Foo* foo, char* del_key, char* enc_file_name, char* reenc_file_name) { foo->reencrypt(del_key, enc_file_name, reenc_file_name); }
-    void Foo_decrypt(Foo* foo, char* secret_key, char* enc_file_name, char* dec_file_name) { foo->decrypt(secret_key, enc_file_name, dec_file_name); }
+    Proxylib* Proxylib_new(){ return new Proxylib(); }
+    void Proxylib_bar(Proxylib* proxylib, char* str){ proxylib->bar(str); }
+    void Proxylib_generate_key(Proxylib* proxylib, char* fname) { proxylib->generate_key(fname); }
+    void Proxylib_generate_reencrypt_key(Proxylib* proxylib, char* pname, char* sname) { proxylib->generate_reencrypt_key(pname, sname); }
+    void Proxylib_encrypt(Proxylib* proxylib, char* public_key, char* plain_text, char* file_name) { proxylib->encrypt(public_key, plain_text, file_name); }
+    void Proxylib_reencrypt(Proxylib* proxylib, char* del_key, char* enc_file_name, char* reenc_file_name) { proxylib->reencrypt(del_key, enc_file_name, reenc_file_name); }
+    void Proxylib_decrypt(Proxylib* proxylib, char* secret_key, char* enc_file_name, char* dec_file_name) { proxylib->decrypt(secret_key, enc_file_name, dec_file_name); }
 }
 
 
