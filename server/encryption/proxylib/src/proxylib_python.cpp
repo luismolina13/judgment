@@ -131,13 +131,40 @@ class Proxylib{
 		//
 		// Parameter generation test
 		//
-		cout << ". Generating curve parameters";
-		if (PRE1_generate_params(gParams) == FALSE) {
-			cout << " ... FAILED" << endl;
-		} else {
-			cout << " ... OK" << endl;
-		}
+        ifstream file("GenParam", ios::binary | ios::in);
+        if(file) {
+            // Read parameters
+            int size = 0;
+            char junk[1];
 
+            file >> size;
+            file.read(junk, 1);
+
+            char* buffer = new char[size];
+            file.read(buffer, size);
+
+            file.close();
+            gParams.deserialize(SERIALIZE_BINARY, buffer, size);
+            delete [] buffer;
+        }
+        else {
+            // Generate parameters
+            cout << ". Generating curve parameters";
+    		if (PRE1_generate_params(gParams) == FALSE) {
+    			cout << " ... FAILED" << endl;
+    		} else {
+    			cout << " ... OK" << endl;
+    		}
+
+            // Save parameters
+            ofstream file("GenParam", ios::binary | ios::out);
+            int size = gParams.getSerializedSize(SERIALIZE_BINARY);
+            char* buffer = new char[size*2];
+            size = gParams.serialize(SERIALIZE_BINARY, buffer, size * 2);
+            file << size << '\n';
+            file.write(buffer, size);
+            file.close();
+        }
 
 	}
         void bar(char* str) {
