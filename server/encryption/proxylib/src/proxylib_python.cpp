@@ -133,6 +133,11 @@ class Proxylib{
 		//
         ifstream file("GenParam", ios::binary | ios::in);
         if(file) {
+            if (PRE1_generate_params(gParams) == FALSE) {
+                cout << "Nope. Doesn't work." << endl;
+            } else {
+                cout << "Maybe it worked?" << endl;
+            }
             // Read parameters
             int size = 0;
             char junk[1];
@@ -141,10 +146,13 @@ class Proxylib{
             file.read(junk, 1);
 
             char* buffer = new char[size];
-            file.read(buffer, size);
+            file.read(buffer, size);    
 
             file.close();
             gParams.deserialize(SERIALIZE_BINARY, buffer, size);
+            
+            cout << "P after: " << gParams.P << endl;
+
             delete [] buffer;
         }
         else {
@@ -159,11 +167,36 @@ class Proxylib{
             // Save parameters
             ofstream file("GenParam", ios::binary | ios::out);
             int size = gParams.getSerializedSize(SERIALIZE_BINARY);
-            char* buffer = new char[size*2];
-            size = gParams.serialize(SERIALIZE_BINARY, buffer, size * 2);
+            char* buffer = new char[1000];
+            
+            cout << "bits_local: " << gParams.bits_local << endl;
+            cout << "P: " << gParams.P << endl;
+            
+            size = gParams.serialize(SERIALIZE_BINARY, buffer, 1000);
+            
+            //CurveParams newParams;
+            //newParams.deserialize(SERIALIZE_BINARY, buffer, size);
+            //cout << "equal? " << (gParams == newParams);
+            //cout << "P: " << newParams.P << endl;
             file << size << '\n';
             file.write(buffer, size);
             file.close();
+
+            ifstream file2("GenParam", ios::binary | ios::in);
+            char junk[1];
+
+            file2 >> size;
+            file2.read(junk, 1);
+
+            char* buffer2 = new char[size];
+            file2.read(buffer2, size);
+
+            file2.close();
+            CurveParams newParam;
+            newParam.deserialize(SERIALIZE_BINARY, buffer2, size);
+            cout << "equal? " << (gParams == newParam);
+            delete [] buffer;
+
         }
 
 	}
