@@ -6,7 +6,10 @@ import os, uuid
 from proxylib import Proxylib
  
 __UPLOADS__ = "uploads/"
-#proxylib = Proxylib()
+proxylib = Proxylib()
+#proxylib.reencrypt("LuisKey_sFriendKey_p", "uploads/120/encrypted_file", "reencryption_file")
+#proxylib.decrypt("FriendKey_s", "reencryption_file", "decryption")
+
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
@@ -26,12 +29,18 @@ class UploadHandler(tornado.web.RequestHandler):
         directory = __UPLOADS__ + user_id + "/"
         if not os.path.exists(directory):
             os.makedirs(directory)
-        fh = open(directory + fname, 'w')
-        fh.write(fileinfo['body'])
+        with open(directory + fname, 'w') as fh:
+            fh.write(fileinfo['body'])
+        fh.close()
+
+        with open(directory + fname, "r") as f:
+            read_data = f.read()
+        f.close()
 
         # Reencrypt the file I just received
-        proxylib = Proxylib()
-        proxylib.reencrypt("LuisKey_sFriendKey_p", directory + fname, "reencryption_file")
+        #print directory + fname
+        proxylib.reencrypt("LuisKey_sFriendKey_p", str(directory+fname), "reencryption_file")
+        proxylib.decrypt("FriendKey_s", "reencryption_file", "decryption")
 
         # TODO send to all the friends or store somewhere to be used
         self.finish(fname + " is uploaded!! Check %s folder" %__UPLOADS__)

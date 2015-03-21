@@ -978,7 +978,7 @@ CurveParams::deserialize(SERIALIZE_MODE mode, char *buffer, int bufSize)
   if (buffer == NULL) {
     return 0;
   }
-
+  //cout << "INSIDE DESERIALIZE" << endl;
   // Set base-16 ASCII encoding
   miracl *mip=&precision;
   mip->IOBASE = 16;
@@ -997,28 +997,51 @@ CurveParams::deserialize(SERIALIZE_MODE mode, char *buffer, int bufSize)
     if (len <= 0) return FALSE;
     buffer += len;
 
+    //cout << this->bits_local << endl;
+
     this->p = charToBig(buffer, &len);
     if (len <= 0) return FALSE;
     buffer += len;
+
+    //cout << "p: " << this->p << endl;
+
 
     this->q = charToBig(buffer, &len);
     if (len <= 0) return FALSE;
     buffer += len;
 
+    //cout << "q: " << this->q << endl;
+
     this->qsquared = pow(q, 2);
+
+    //cout << "q^2: " << this->qsquared << endl;
+
+// Set up the elliptic curve 
+#ifdef AFFINE
+  ecurve(0,1,this->p,MR_AFFINE);   
+#endif
+#ifdef PROJECTIVE
+  ecurve(0,1,this->p,MR_PROJECTIVE);
+#endif
 
     this->P = charToECn(buffer, &len);
     if (len <= 0) return FALSE;
     buffer += len;
 
+    //cout << "P: " << this->P << endl;
+
     this->Z = charToZZn2(buffer, &len);
     if (len <= 0) return FALSE;
     buffer += len;
+
+    //cout << "Z: " << this->Z << endl;
 
     this->cube = charToZZn2(buffer, &len);
     if (len <= 0) return FALSE;
     buffer += len;
 
+    //cout << this->cube << endl;
+/*
 // Set up the elliptic curve 
 #ifdef AFFINE
   ecurve(0,1,params.p,MR_AFFINE);   
@@ -1026,7 +1049,7 @@ CurveParams::deserialize(SERIALIZE_MODE mode, char *buffer, int bufSize)
 #ifdef PROJECTIVE
   ecurve(0,1,this->p,MR_PROJECTIVE);
 #endif
-
+*/
     return TRUE;
     break;
 

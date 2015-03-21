@@ -133,11 +133,11 @@ class Proxylib{
 		//
         ifstream file("GenParam", ios::binary | ios::in);
         if(file) {
-            if (PRE1_generate_params(gParams) == FALSE) {
+            /*if (PRE1_generate_params(gParams) == FALSE) {
                 cout << "Nope. Doesn't work." << endl;
             } else {
                 cout << "Maybe it worked?" << endl;
-            }
+            }*/
             // Read parameters
             int size = 0;
             char junk[1];
@@ -182,7 +182,7 @@ class Proxylib{
             file.write(buffer, size);
             file.close();
 
-            ifstream file2("GenParam", ios::binary | ios::in);
+            /*ifstream file2("GenParam", ios::binary | ios::in);
             char junk[1];
 
             file2 >> size;
@@ -196,7 +196,7 @@ class Proxylib{
             newParam.deserialize(SERIALIZE_BINARY, buffer2, size);
             cout << "equal? " << (gParams == newParam);
             delete [] buffer;
-
+            */
         }
 
 	}

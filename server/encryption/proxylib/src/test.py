@@ -24,10 +24,10 @@ class Proxylib(object):
         lib.Proxylib_decrypt(self.obj, secret_key, enc_file_name, dec_file_name)
 
 f = Proxylib()
-f.bar("Luis") #and you will see "Hello" on the screen
-f.generate_key("LuisKey")
-f.generate_key("FriendKey")
-f.generate_reencrypt_key("FriendKey_p", "LuisKey_s")
-f.encrypt("LuisKey_p", "http://www.cplusplus.com/reference/cstring/strcpy/", "encryption")
-f.reencrypt("LuisKey_sFriendKey_p", "encryption", "reencryption")
+#f.bar("Luis") #and you will see "Hello" on the screen
+#f.generate_key("LuisKey")
+#f.generate_key("FriendKey")
+#f.generate_reencrypt_key("FriendKey_p", "LuisKey_s")
+f.encrypt("LuisKey_p", "http://www.cplusplus.com/reference/cstring/strcpy/", "encrypted_file")
+f.reencrypt("LuisKey_sFriendKey_p", "encrypted_file", "reencryption")
 f.decrypt("FriendKey_s", "reencryption", "decryption")
