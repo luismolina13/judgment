@@ -242,7 +242,7 @@ class Proxylib{
           }
 	}
 
-        void generate_reencrypt_key(char* pname, char* sname) {
+        void generate_reencrypt_key(char* sname, char* pname, char* dname) {
             char buffer[1000];
             ProxyPK_PRE1 pk = read_public_key(pname);
             ProxySK_PRE1 sk = read_secret_key(sname);
@@ -259,9 +259,7 @@ class Proxylib{
             } else {
                 cout << " ... OK" << endl;
             }
-            string secret(sname);
-            string publicF(pname);
-            string rname = secret + publicF;
+            string rname(dname);
             int rSize = SerializeDelegationKey_PRE1(delKey, SERIALIZE_BINARY, buffer, 1000);
             ofstream rfile(rname.c_str(), ios::binary | ios::out);
             rfile << rSize << '\n';
@@ -364,7 +362,7 @@ extern "C" {
     Proxylib* Proxylib_new(){ return new Proxylib(); }
     void Proxylib_bar(Proxylib* proxylib, char* str){ proxylib->bar(str); }
     void Proxylib_generate_key(Proxylib* proxylib, char* fname) { proxylib->generate_key(fname); }
-    void Proxylib_generate_reencrypt_key(Proxylib* proxylib, char* pname, char* sname) { proxylib->generate_reencrypt_key(pname, sname); }
+    void Proxylib_generate_reencrypt_key(Proxylib* proxylib, char* sname, char* pname, char* dname) { proxylib->generate_reencrypt_key(sname, pname, dname); }
     void Proxylib_encrypt(Proxylib* proxylib, char* public_key, char* plain_text, char* file_name) { proxylib->encrypt(public_key, plain_text, file_name); }
     void Proxylib_reencrypt(Proxylib* proxylib, char* del_key, char* enc_file_name, char* reenc_file_name) { proxylib->reencrypt(del_key, enc_file_name, reenc_file_name); }
     void Proxylib_decrypt(Proxylib* proxylib, char* secret_key, char* enc_file_name, char* dec_file_name) { proxylib->decrypt(secret_key, enc_file_name, dec_file_name); }
