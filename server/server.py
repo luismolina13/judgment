@@ -5,6 +5,8 @@ import tornado.web
 import os, uuid
 from proxylib import Proxylib
 import zipfile
+import time
+import datetime
  
 __UPLOADS__ = "uploads/"
 __DOWNLOADS__ = "downloads/"
@@ -36,7 +38,7 @@ class UploadHandler(tornado.web.RequestHandler):
         fh.close()
 
         # Reencrypt the file I just received
-        #print directory + fname
+        re_encrypt_start = time.time()
         del_key_dir = __FILES__ + user_id + "/" + __DEL_KEYS__
         for del_key in os.listdir(del_key_dir):
             friend_id = del_key.split('_')[1][1:]
@@ -46,6 +48,9 @@ class UploadHandler(tornado.web.RequestHandler):
                 os.makedirs(download_directory)
             proxylib.reencrypt(str(del_key_dir + del_key), str(directory+fname), str(download_directory + fname))
         os.remove(str(directory + fname))
+        #t = datetime.datetime.fromtimestamp(re_encrypt_start).strftime('%Y-%m-%d %H:%M:%S')
+        t = time.time() - re_encrypt_start
+        print "Seconds for re-encryption:", t
         #proxylib.decrypt("FriendKey_s", "reencryption_file", "decryption")
 
         # TODO send to all the friends or store somewhere to be used
