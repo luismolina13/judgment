@@ -4,6 +4,7 @@ import tornado.ioloop
 import tornado.web
 import os, uuid
 from proxylib import Proxylib
+import zipfile
  
 __UPLOADS__ = "uploads/"
 __DOWNLOADS__ = "downloads/"
@@ -44,14 +45,38 @@ class UploadHandler(tornado.web.RequestHandler):
             if not os.path.exists(download_directory):
                 os.makedirs(download_directory)
             proxylib.reencrypt(str(del_key_dir + del_key), str(directory+fname), str(download_directory + fname))
+        os.remove(str(directory + fname))
         #proxylib.decrypt("FriendKey_s", "reencryption_file", "decryption")
 
         # TODO send to all the friends or store somewhere to be used
         self.finish(fname + " is uploaded!! Check %s folder" %__UPLOADS__)
 
 class DownloadHandler(tornado.web.RequestHandler):
+    '''Creates a .zip file that contains the downloads folder with all the
+       files inside of it.'''
     def get(self, user_id):
-        self.write("Upload a file with POST for user: %s" %user_id)
+        files_dir = __FILES__ + user_id + '/'
+        buf_size = 4096
+        self.set_header('Content-Type', 'application/octet-stream')
+        self.set_header('Content-Disposition', 'attachment; filename=downloads.zip')
+        os.chdir(files_dir)
+        zip_dir = str(files_dir + 'downloads.zip')
+        zipf = zipfile.ZipFile('downloads.zip', 'a')
+        for files in os.listdir('downloads/'):
+            print os.getcwd()
+            zipf.write(str('downloads/' + files))
+        zipf.close()
+        
+        file_name = 'downloads.zip'
+        with open(file_name, 'r') as f:
+            while True:
+                data = f.read(buf_size)
+                if not data:
+                    break
+                self.write(data)
+        os.remove('downloads.zip')
+        os.chdir('../../..')
+        self.finish()
 
     def post(self, user_id):
         fileinfo = self.request.files['file'][0]
