@@ -7,8 +7,6 @@ from proxylib import Proxylib
  
 __UPLOADS__ = "uploads/"
 proxylib = Proxylib()
-#proxylib.reencrypt("LuisKey_sFriendKey_p", "uploads/120/encrypted_file", "reencryption_file")
-#proxylib.decrypt("FriendKey_s", "reencryption_file", "decryption")
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -22,7 +20,7 @@ class UploadHandler(tornado.web.RequestHandler):
 
     def post(self, user_id):
         fileinfo = self.request.files['file'][0]
-        print "fileinfo is", fileinfo
+        #print "fileinfo is", fileinfo
         fname = fileinfo['filename']
         extn = os.path.splitext(fname)[1]
         fname += extn
@@ -32,10 +30,6 @@ class UploadHandler(tornado.web.RequestHandler):
         with open(directory + fname, 'w') as fh:
             fh.write(fileinfo['body'])
         fh.close()
-
-        with open(directory + fname, "r") as f:
-            read_data = f.read()
-        f.close()
 
         # Reencrypt the file I just received
         #print directory + fname
