@@ -47,7 +47,7 @@ def upload(urls):
     
     # Encrypt the file
     filename = str(uuid.uuid4())
-    # proxylib.encrypt('files/public_keys/' + str(client_id) + '_p', urls, filename)
+    proxylib.encrypt('files/public_keys/' + str(client_id) + '_p', urls, filename)
 
     filehandle = open(filename)
     upload_url = server_url + 'upload/' + str(client_id)
