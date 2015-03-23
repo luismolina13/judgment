@@ -6,10 +6,10 @@ import threading
 import time
 import uuid
 import zipfile
-# from proxylib import Proxylib
+from proxylib import Proxylib
 
 url_threshold = 1
-# proxylib = Proxylib()
+proxylib = Proxylib()
 
 client_id = 0
 # Lisa's Server
@@ -110,7 +110,7 @@ def main():
             upload('\n'.join(current_urls))
             del current_urls[:]
 
-    @setInterval(1,1)
+    @setInterval(5)
     def get_urls():
         filename = download()
         zipf = zipfile.ZipFile(filename + '.zip')
@@ -127,9 +127,9 @@ def main():
         shutil.rmtree('downloads/')
         os.remove(filename + '.zip')
 
-    # send_urls()
+    send_urls()
     get_urls()
-    time.sleep(10)
+    time.sleep(100)
 
     # @setInterval(1)
     # def foo(a):
