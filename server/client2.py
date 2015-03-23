@@ -47,11 +47,13 @@ def upload(urls):
     print r.status_code
     print r.text
     # Delete the file
+    os.remove(filename)
 
 def download():
     print 'Downloading files'
 
-def get_urls(history_file):
+
+def parse_history(history_file):
     urls = []
     with open(history_file, 'rb') as csvfile:
         historyreader = csv.reader(csvfile, delimiter=',', quotechar='|')
@@ -63,7 +65,7 @@ def main():
     url_threshold = 20
     current_urls = []
         
-    urls = get_urls('luis_history.csv')
+    urls = parse_history('luis_history.csv')
 
     @setInterval(1)
     def send_urls():
@@ -82,6 +84,11 @@ def main():
             #         fh.write("%s\n" % url)
             upload('\n'.join(current_urls))
             del current_urls[:]
+
+    @setInterval(5)
+    def get_urls():
+
+
 
     send_urls()
     time.sleep(60)
