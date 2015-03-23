@@ -64,9 +64,17 @@ class DownloadHandler(tornado.web.RequestHandler):
         buf_size = 4096
         self.set_header('Content-Type', 'application/octet-stream')
         self.set_header('Content-Disposition', 'attachment; filename=downloads.zip')
+
         os.chdir(files_dir)
+        
         zip_dir = str(files_dir + 'downloads.zip')
         zipf = zipfile.ZipFile('downloads.zip', 'a')
+        if not os.listdir('downloads/'):
+            # No content status 204
+            self.set_status(204)
+            self.finish()
+            os.chdir('../..')
+            return
         for files in os.listdir('downloads/'):
             print os.getcwd()
             zipf.write(str('downloads/' + files))
@@ -80,7 +88,7 @@ class DownloadHandler(tornado.web.RequestHandler):
                     break
                 self.write(data)
         os.remove('downloads.zip')
-        os.chdir('../../..')
+        os.chdir('../..')
         self.finish()
 
     def post(self, user_id):
