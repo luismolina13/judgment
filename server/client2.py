@@ -5,9 +5,11 @@ import time
 import uuid
 from proxylib import Proxylib
 
+url_threshold = 1
 proxylib = Proxylib()
+
 client_id = 0
-server_url = 'http://ec2-54-65-123-251.ap-northeast-1.compute.amazonaws.com/'
+server_url = 'http://ec2-54-92-44-89.ap-northeast-1.compute.amazonaws.com/'
 
 def setInterval(interval, times = -1):
     # This will be the actual decorator,
@@ -35,7 +37,7 @@ def setInterval(interval, times = -1):
     return outer_wrap
 
 def upload(urls):
-    print 'Uploading file urls for' + client_id
+    print 'Uploading urls for client ' + str(client_id)
     
     # Encrypt the file
     filename = str(uuid.uuid4())
@@ -43,7 +45,7 @@ def upload(urls):
 
     filehandle = open(filename)
     upload_url = server_url + 'upload/' + str(client_id)
-    r = requests.post(server_url, data={},files = {'file':filehandle})
+    r = requests.post(upload_url, data={},files = {'file':filehandle})
     print r.status_code
     print r.text
     # Delete the file
@@ -60,7 +62,6 @@ def get_urls(history_file):
     return urls
 
 def main():
-    url_threshold = 20
     current_urls = []
         
     urls = get_urls('luis_history.csv')
