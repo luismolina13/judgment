@@ -61,7 +61,8 @@ def download():
     print 'Downloading files'
     download_url = server_url + 'download/' + str(client_id)
     r = requests.get(download_url)
-    print r.status_code
+    if r.status_code == 204:
+        return None
 
     filename = str(uuid.uuid4())
     with open(filename + '.zip', 'w') as f:
@@ -100,7 +101,7 @@ def main():
                 if 'www.google' in url[1]:
                     pass
                 else:
-                    print url[1]
+                    # print url[1]
                     current_urls.append(url[1])
         else:
             # filename = str(uuid.uuid4()) + '.txt'
@@ -113,18 +114,19 @@ def main():
     @setInterval(5)
     def get_urls():
         filename = download()
+        if not filename:
+            return
         zipf = zipfile.ZipFile(filename + '.zip')
-        zipf.extractall()
-        for file_name in os.listdir('downloads/'):
+        zipf.extractall(filename)
+        for file_name in os.listdir(filename + '/downloads/'):
             decrypted_file = str(uuid.uuid4())
-            proxylib.decrypt('files/public_keys/' + str(client_id) + '_s', file_name, decrypted_file)
-            with open(decrypted_file, 'r') as df:
+            proxylib.decrypt('files/public_keys/' + str(client_id) + '_s', filename + '/downloads/' + file_name, filename + '/' + decrypted_file)
+            with open(filename + '/' + decrypted_file, 'r') as df:
                 dec_urls = df.readlines()
                 for dec_url in dec_urls:
-                    print dec_url
-                friends_urls += dec_urls
-                os.remove(decrypted_file)
-        shutil.rmtree('downloads/')
+                    print "Decrypted Urls: ", dec_url
+                #friends_urls += dec_urls
+        shutil.rmtree(filename)
         os.remove(filename + '.zip')
 
     send_urls()
