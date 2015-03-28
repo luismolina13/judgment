@@ -53,8 +53,8 @@ class UploadHandler(tornado.web.RequestHandler):
         print "Seconds for re-encryption:", t
         #proxylib.decrypt("FriendKey_s", "reencryption_file", "decryption")
 
-        # TODO send to all the friends or store somewhere to be used
-        self.finish(fname + " is uploaded!! Check %s folder" %__UPLOADS__)
+        #  stored in friends download folders to be used
+        self.finish(fname + " is uploaded!!")
 
 class DownloadHandler(tornado.web.RequestHandler):
     '''Creates a .zip file that contains the downloads folder with all the
@@ -75,9 +75,10 @@ class DownloadHandler(tornado.web.RequestHandler):
             self.finish()
             os.chdir('../..')
             return
-        for files in os.listdir('downloads/'):
+        download_files = os.listdir('downloads/')
+        for download_file in download_files:
             print os.getcwd()
-            zipf.write(str('downloads/' + files))
+            zipf.write(str('downloads/' + download_file))
         zipf.close()
         
         file_name = 'downloads.zip'
@@ -88,6 +89,8 @@ class DownloadHandler(tornado.web.RequestHandler):
                     break
                 self.write(data)
         os.remove('downloads.zip')
+        for download_file in download_files:
+            os.remove(str('downloads/' + download_file))
         os.chdir('../..')
         self.finish()
 
