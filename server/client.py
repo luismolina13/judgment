@@ -1,17 +1,21 @@
+import bitly_api
 import csv
 import os
 import requests
 import shutil
 import threading
 import time
+import tinyurl
+import urllib2
 import uuid
 import zipfile
 from proxylib import Proxylib
 
+BITLY_ACCESS_TOKEN = "84b5098ee1dc11ffe4d23e0999846c62c84a49bd"
 url_threshold = 1
 proxylib = Proxylib()
 
-client_id = 0
+client_id = 1
 # Lisa's Server
 # server_url = 'http://ec2-54-92-44-89.ap-northeast-1.compute.amazonaws.com/'
 # Luis' Server
@@ -44,7 +48,6 @@ def setInterval(interval, times = -1):
 
 def upload(urls):
     print 'Uploading urls for client ' + str(client_id)
-    
     # Encrypt the file
     filename = str(uuid.uuid4())
     proxylib.encrypt('files/public_keys/' + str(client_id) + '_p', urls, filename)
@@ -91,21 +94,28 @@ def main():
     friends_urls = []
 
     urls = parse_history('luis_history.csv')
-    
+    #urls = []#'http://he11oworld.comhe11oworld.comhe11oworld.comhe11oworld.comhe11oworld.comhe11oworld.com']#, 'http://superuser.com/questions/can-chrome-browser-history-be-exported-to-an-html-file']
+
+
     @setInterval(1)
     def send_urls():
         if len(urls) == 0:
-            return
-        url = urls.pop(0).split('://')
+            return        
+        url_for_tiny = urls.pop(0)
+        url = url_for_tiny.split("://")
         if len(url) > 1:
             if 'www.google' in url[1]:
                 pass
             else:
-                if len(url[1]) > 132:
+                bitly = bitly_api.Connection(access_token=BITLY_ACCESS_TOKEN)
+                data = bitly.shorten(url_for_tiny)
+                print data
+                tiny_url = data['url']
+                if len(tiny_url) > 132:
                     # TODO: convert to tiny url
-                    url[1] = url[1][0:132]
-                print "============> ", url[1], len(url[1])
-                upload(url[1])
+                    tiny_url = tiny_url[0:132]
+                print "============> ", url[1], tiny_url, len(tiny_url)
+                upload(tiny_url.split("://")[1])
 
     @setInterval(5)
     def get_urls():
@@ -120,7 +130,8 @@ def main():
             with open(filename + '/' + decrypted_file, 'r') as df:
                 dec_urls = df.readlines()
                 for dec_url in dec_urls:
-                    print "Decrypted Urls: ", dec_url
+                    #fp = urllib2.urlopen(dec_url)
+                    print "<============ ", dec_url#, fp.geturl()
                 #friends_urls += dec_urls
         shutil.rmtree(filename)
         os.remove(filename + '.zip')
