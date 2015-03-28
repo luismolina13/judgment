@@ -15,7 +15,7 @@ client_id = 0
 # Lisa's Server
 # server_url = 'http://ec2-54-92-44-89.ap-northeast-1.compute.amazonaws.com/'
 # Luis' Server
-server_url = 'http://ec2-54-65-123-251.ap-northeast-1.compute.amazonaws.com/'
+server_url = 'http://ec2-52-68-29-226.ap-northeast-1.compute.amazonaws.com/'
 
 def setInterval(interval, times = -1):
     # This will be the actual decorator,
@@ -88,28 +88,24 @@ def parse_history(history_file):
     return urls
 
 def main():
-    current_urls = []
     friends_urls = []
 
     urls = parse_history('luis_history.csv')
-
+    
     @setInterval(1)
     def send_urls():
-        if len(current_urls) < url_threshold:
-            url = urls.pop(0).split('://')
-            if len(url) > 1:
-                if 'www.google' in url[1]:
-                    pass
-                else:
-                    # print url[1]
-                    current_urls.append(url[1])
-        else:
-            # filename = str(uuid.uuid4()) + '.txt'
-            # with open(filename, 'w') as fh:
-            #     for url in current_urls:
-            #         fh.write("%s\n" % url)
-            upload('\n'.join(current_urls))
-            del current_urls[:]
+        if len(urls) == 0:
+            return
+        url = urls.pop(0).split('://')
+        if len(url) > 1:
+            if 'www.google' in url[1]:
+                pass
+            else:
+                if len(url[1]) > 132:
+                    # TODO: convert to tiny url
+                    url[1] = url[1][0:132]
+                print "============> ", url[1], len(url[1])
+                upload(url[1])
 
     @setInterval(5)
     def get_urls():
