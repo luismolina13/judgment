@@ -15,7 +15,7 @@ BITLY_ACCESS_TOKEN = "84b5098ee1dc11ffe4d23e0999846c62c84a49bd"
 url_threshold = 1
 proxylib = Proxylib()
 
-client_id = 1
+client_id = 0
 # Lisa's Server
 # server_url = 'http://ec2-54-92-44-89.ap-northeast-1.compute.amazonaws.com/'
 # Luis' Server
@@ -50,7 +50,7 @@ def upload(urls):
     print 'Uploading urls for client ' + str(client_id)
     # Encrypt the file
     filename = str(uuid.uuid4())
-    proxylib.encrypt('files/public_keys/' + str(client_id) + '_p', urls, filename)
+    proxylib.encrypt('files/public_keys/' + str(client_id) + '_p', str(urls), filename)
 
     filehandle = open(filename)
     upload_url = server_url + 'upload/' + str(client_id)
@@ -115,7 +115,7 @@ def main():
                     # TODO: convert to tiny url
                     tiny_url = tiny_url[0:132]
                 print "============> ", url[1], tiny_url, len(tiny_url)
-                upload(tiny_url.split("://")[1])
+                upload(tiny_url)
 
     @setInterval(5)
     def get_urls():
