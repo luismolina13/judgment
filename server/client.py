@@ -51,7 +51,7 @@ def setInterval(interval, times = -1):
         return wrap
     return outer_wrap
 
-def upload(urls, encr_stats, upload_stats):
+def upload(urls, encr_stats, upld_stats):
     print 'Uploading urls for client ' + str(client_id)
     # Encrypt the file
     filename = str(uuid.uuid4())
@@ -73,13 +73,13 @@ def upload(urls, encr_stats, upload_stats):
     r = requests.post(upload_url, data={},files = {'file':filehandle})
     print r.status_code
     upload_time = time.time() - upload_begin
-    print upload_stats[-1]
-    upload_stats[-1] += upload_time
-    upload_stats[0] += 1
-    if upload_time < upload_stats[1]:
-        upload_stats[1] = upload_time
-    if upload_time > upload_stats[2]:
-        upload_stats[2] = upload_time
+    print upld_stats['avg']
+    upld_stats['avg'] += upload_time
+    upld_stats['count'] += 1
+    if upload_time < upld_stats['min']:
+        upld_stats['min'] = upload_time
+    if upload_time > upld_stats['max']:
+        upld_stats['max'] = upload_time
     print r.text
     # Delete the file
     os.remove(filename)
@@ -155,6 +155,22 @@ def print_url_stats(friends_urls, most_recent, resolve_urls=False):
         else:
             print sorted_by_count[num]
     print "######################################"
+
+
+def print_and_write(name, stats):
+    avg = 0.0
+    if stats['count']:
+        avg = stats['avg'] / stats['count']
+    else:
+        stats['min'] = 0.0
+    print name, "count:", stats['count']
+    print name, "average:", avg
+    print name, "min:", stats['min']
+    print name, "max:", stats['max']
+    filename = name + "_times.txt"
+    with open(filename, 'a') as wfile:
+        wfile.write("%d,%f,%f,%f\n" % (stats['count'], avg, stats['min'], stats['max']))
+
 def main():
     friends_urls = {}
     most_recent = []
@@ -163,7 +179,7 @@ def main():
     #urls = []#'http://he11oworld.comhe11oworld.comhe11oworld.comhe11oworld.comhe11oworld.comhe11oworld.com']#, 'http://superuser.com/questions/can-chrome-browser-history-be-exported-to-an-html-file']
 
     # count, min, max, avg
-    upload_stats = [0, 1.0, 0.0, 0.0]
+    upld_stats = {'count': 0, 'min': 1.0, 'max': 0.0, 'avg': 0.0}
     encr_stats = {'count': 0, 'min': 1.0, 'max': 0.0, 'avg': 0.0}
     down_stats = {'count': 0, 'min': 1.0, 'max': 0.0, 'avg': 0.0}
     decr_stats = {'count': 0, 'min': 1.0, 'max': 0.0, 'avg': 0.0}
@@ -188,7 +204,7 @@ def main():
                     # TODO: convert to tiny url
                     tiny_url = tiny_url[0:132]
                 print "============> ", url[1], tiny_url, len(tiny_url)
-                upload(tiny_url, encr_stats, upload_stats)
+                upload(tiny_url, encr_stats, upld_stats)
 
     @setInterval(5)
     def get_urls():
@@ -241,35 +257,11 @@ def main():
     get_urls()
     time.sleep(16)
     
-    upload_avg = upload_stats[-1] / upload_stats[0]
-    print "Upload count:", upload_stats[0]
-    print "Upload average:", upload_avg
-    print "Upload min:", upload_stats[1]
-    print "Upload max:", upload_stats[2]
-
-    encr_avg = encr_stats['avg'] / encr_stats['count']
-    print "Encryption count:", encr_stats['count']
-    print "Encryption average:", encr_avg
-    print "Encryption min:", encr_stats['min']
-    print "Encryption max:", encr_stats['max']
-
-    down_avg = down_stats['avg'] / down_stats['count']
-    print "Download count:", down_stats['count']
-    print "Download average:", down_avg
-    print "Download min:", down_stats['min']
-    print "Download max:", down_stats['max']
-
-    decr_avg = decr_stats['avg'] / decr_stats['count']
-    print "Decryption count:", decr_stats['count']
-    print "Decryption average:", decr_avg
-    print "Decryption min:", decr_stats['min']
-    print "Decryption max:", decr_stats['max']
-
-    durl_avg = durl_stats['avg'] / durl_stats['count']
-    print "Download files count:", durl_stats['count']
-    print "Average number of files:", durl_avg
-    print "Min number of files:", durl_stats['min']
-    print "Max number of files:", durl_stats['max']
+    print_and_write('Upload', upld_stats)
+    print_and_write('Encryption', encr_stats)
+    print_and_write('Download', down_stats)
+    print_and_write('Decryption', decr_stats)
+    print_and_write('Num_download_files', durl_stats)
 
     # @setInterval(1)
     # def foo(a):
