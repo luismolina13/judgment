@@ -14,16 +14,16 @@ import zipfile
 
 
 from proxylib import Proxylib
+from random import randint
 
 BITLY_ACCESS_TOKEN = "84b5098ee1dc11ffe4d23e0999846c62c84a49bd"
 url_threshold = 1
 proxylib = Proxylib()
 
-client_id = 1
 # Lisa's Server
-server_url = 'http://ec2-54-178-192-75.ap-northeast-1.compute.amazonaws.com/'
+#server_url = 'http://ec2-54-178-192-75.ap-northeast-1.compute.amazonaws.com/'
 # Luis' Server
-#server_url = 'http://ec2-52-68-29-226.ap-northeast-1.compute.amazonaws.com/'
+server_url = 'http://ec2-52-68-29-226.ap-northeast-1.compute.amazonaws.com/'
 
 
 def setInterval(interval, times = -1):
@@ -52,6 +52,7 @@ def setInterval(interval, times = -1):
     return outer_wrap
 
 def upload(urls, encr_stats, upld_stats):
+    client_id = randint(0,99)
     print 'Uploading urls for client ' + str(client_id)
     # Encrypt the file
     filename = str(uuid.uuid4())
@@ -84,7 +85,7 @@ def upload(urls, encr_stats, upld_stats):
     # Delete the file
     os.remove(filename)
 
-def download(down_stats):
+def download(down_stats, client_id):
     print 'Downloading files'
     download_url = server_url + 'download/' + str(client_id)
     download_begin = time.time()
@@ -210,7 +211,8 @@ def main():
 
     @setInterval(5)
     def get_urls():
-        filename = download(down_stats)
+        client_id = randint(0,99)
+        filename = download(down_stats, client_id)
         if not filename:
             return
         zipf = zipfile.ZipFile(filename + '.zip')
