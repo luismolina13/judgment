@@ -19,7 +19,7 @@ BITLY_ACCESS_TOKEN = "84b5098ee1dc11ffe4d23e0999846c62c84a49bd"
 url_threshold = 1
 proxylib = Proxylib()
 
-client_id = 0
+client_id = 1
 # Lisa's Server
 server_url = 'http://ec2-54-178-192-75.ap-northeast-1.compute.amazonaws.com/'
 # Luis' Server
@@ -124,8 +124,8 @@ def parse_history(history_file):
             urls.append(row[1])
     return urls
 
-def print_url_stats(friends_urls, most_recent, resolve_urls=False):
-    print "########## Most Recent Urls ##########"
+def print_url_stats(cid, friends_urls, most_recent, resolve_urls=False):
+    print "########## Most Recent Urls for %d ##########" % cid
     for url in most_recent:
         if resolve_urls:
             try:
@@ -136,9 +136,9 @@ def print_url_stats(friends_urls, most_recent, resolve_urls=False):
                 print url
         else:
             print url
-    print "######################################"
+    print "#############################################"
 
-    print "############ Top 10 Urls #############"
+    print "############ Top 10 Urls for %d #############" % cid
     sorted_by_count = sorted(friends_urls.items(), key=operator.itemgetter(1))
     sorted_by_count.reverse()
     length = 10
@@ -154,7 +154,7 @@ def print_url_stats(friends_urls, most_recent, resolve_urls=False):
                 print sorted_by_count[num][0], sorted_by_count[num][1]
         else:
             print sorted_by_count[num]
-    print "######################################"
+    print "#############################################"
 
 
 def print_and_write(name, stats):
@@ -172,8 +172,10 @@ def print_and_write(name, stats):
         wfile.write("%d,%f,%f,%f\n" % (stats['count'], avg, stats['min'], stats['max']))
 
 def main():
-    friends_urls = {}
-    most_recent = []
+    client_urls = dict.fromkeys(range(0,100), dict())
+    for i in range(0, 100):
+        client_urls[i]['most_recent'] = []
+        client_urls[i]['friends_urls'] = {}
 
     urls = parse_history('luis_history.csv')
     #urls = []#'http://he11oworld.comhe11oworld.comhe11oworld.comhe11oworld.comhe11oworld.comhe11oworld.com']#, 'http://superuser.com/questions/can-chrome-browser-history-be-exported-to-an-html-file']
@@ -231,13 +233,13 @@ def main():
                 for dec_url in dec_urls:
                     #fp = urllib2.urlopen(dec_url)
                     print "<============ ", dec_url#, fp.geturl()
-                    if dec_url in friends_urls:
-                        friends_urls[dec_url] += 1
+                    if dec_url in client_urls[client_id]['friends_urls']:
+                        client_urls[client_id]['friends_urls'][dec_url] += 1
                     else:
-                        friends_urls[dec_url] = 1
-                    most_recent.insert(0, dec_url)
-                    if len(most_recent) > 10:
-                        most_recent.pop()
+                        client_urls[client_id]['friends_urls'][dec_url] = 1
+                    client_urls[client_id]['most_recent'].insert(0, dec_url)
+                    if len(client_urls[client_id]['most_recent']) > 10:
+                        client_urls[client_id]['most_recent'].pop()
         decr_time = time.time() - decr_begin 
         print decr_stats['avg']
         decr_stats['avg'] += decr_time
@@ -251,7 +253,7 @@ def main():
         os.remove(filename + '.zip')
 
         # Print the top 10 urls and the 10 most recent
-        print_url_stats(friends_urls, most_recent)
+        print_url_stats(client_id, client_urls[client_id]['friends_urls'], client_urls[client_id]['most_recent'])
 
     send_urls()
     get_urls()
