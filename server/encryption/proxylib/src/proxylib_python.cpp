@@ -206,12 +206,12 @@ class Proxylib{
             char buff2[10];
             int msgLength = 0;
             //cout << decodePlaintextFromBig(gParams, buff2, 10, &msgLength, tmp) << endl;
-            printf("%d %s\n", msgLength, buff2);
+            //printf("%d %s\n", msgLength, buff2);
             */
 	}
         void bar(char* str) {
             std:://cout << "Hello " << std::endl;
-            printf("%s\n", str);
+            //printf("%s\n", str);
         }
 
 	void generate_key(char* file_name) {
@@ -238,7 +238,7 @@ class Proxylib{
             //for (int i = 0; i < pSize; i++)           
             //    //cout << (int)buffer[i] << ' ';            
             pk1.serialize(SERIALIZE_HEXASCII, buffer, 1000);
-            printf("\n%s\n", buffer);
+            //printf("\n%s\n", buffer);
 
             int sSize = sk1.serialize(SERIALIZE_BINARY, buffer, 1000);
             ofstream sfile(secret_file.c_str(), ios::binary | ios::out);
@@ -246,7 +246,7 @@ class Proxylib{
             sfile.write(buffer, sSize);
             sfile.close();
             sk1.serialize(SERIALIZE_HEXASCII, buffer, 1000);
-            printf("\n%s\n", buffer);
+            //printf("\n%s\n", buffer);
             //cout << "\n ... OK" << endl;
           }
 	}
@@ -257,9 +257,9 @@ class Proxylib{
             ProxySK_PRE1 sk = read_secret_key(sname);
             
             sk.serialize(SERIALIZE_HEXASCII, buffer, 1000);
-            printf("\n%s\n", buffer);
+            //printf("\n%s\n", buffer);
             pk.serialize(SERIALIZE_HEXASCII, buffer, 1000);
-            printf("\n%s\n", buffer);
+            //printf("\n%s\n", buffer);
 
             ECn delKey;
             // Generate a delegation key from user1->user2
@@ -360,7 +360,7 @@ class Proxylib{
                 ofstream dec_file(dec_file_name);
                 dec_file << hex_to_string(result);
                 dec_file.close();
-                printf("\n%s\n", c2);
+                //printf("\n%s\n", c2);
                 delete [] c2;
             }
             //cout << "...Finish decryption" << endl;
