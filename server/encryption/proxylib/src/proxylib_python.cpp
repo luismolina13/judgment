@@ -210,7 +210,7 @@ class Proxylib{
             */
 	}
         void bar(char* str) {
-            std:://cout << "Hello " << std::endl;
+            //cout << "Hello " << std::endl;
             //printf("%s\n", str);
         }
 
