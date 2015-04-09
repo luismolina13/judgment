@@ -16,7 +16,7 @@ import zipfile
 from proxylib import Proxylib
 from random import randint
 
-BITLY_ACCESS_TOKEN = "84b5098ee1dc11ffe4d23e0999846c62c84a49bd"
+BITLY_ACCESS_TOKEN = "f25c1a18104ff2c5edf39a2a16ae8ccae4c2bedc"
 url_threshold = 1
 proxylib = Proxylib()
 
@@ -51,8 +51,8 @@ def setInterval(interval, times = -1):
         return wrap
     return outer_wrap
 
-def upload(urls, encr_stats, upld_stats):
-    client_id = randint(0,99)
+def upload(urls, encr_stats, upld_stats, client_id):
+    #client_id = randint(0,99)
     print 'Uploading urls for client ' + str(client_id)
     # Encrypt the file
     filename = str(uuid.uuid4())
@@ -168,17 +168,18 @@ def print_and_write(name, stats):
     print name, "average:", avg
     print name, "min:", stats['min']
     print name, "max:", stats['max']
-    filename = name + "_times.txt"
+    filename = name + "_times_parsed_csv.txt"
     with open(filename, 'a') as wfile:
         wfile.write("%d,%f,%f,%f\n" % (stats['count'], avg, stats['min'], stats['max']))
 
 def main():
     client_urls = dict.fromkeys(range(0,100), dict())
+    urls = []
     for i in range(0, 100):
         client_urls[i]['most_recent'] = []
         client_urls[i]['friends_urls'] = {}
-
-    urls = parse_history('luis_history.csv')
+        csv_file_name = "csv" + str(i) + ".csv"
+        urls.append(parse_history(csv_file_name))
     #urls = []#'http://he11oworld.comhe11oworld.comhe11oworld.comhe11oworld.comhe11oworld.comhe11oworld.com']#, 'http://superuser.com/questions/can-chrome-browser-history-be-exported-to-an-html-file']
 
     # count, min, max, avg
@@ -191,15 +192,17 @@ def main():
 
     @setInterval(1)
     def send_urls():
-        if len(urls) == 0:
+        client_id = randint(0,99)
+        if len(urls[client_id]) == 0:
             return        
-        url_for_tiny = urls.pop(0)
+        url_for_tiny = urls[client_id].pop(0)
         url = url_for_tiny.split("://")
         if len(url) > 1:
             if 'www.google' in url[1]:
                 pass
             else:
                 bitly = bitly_api.Connection(access_token=BITLY_ACCESS_TOKEN)
+                print url_for_tiny
                 data = bitly.shorten(url_for_tiny)
                 print data
                 tiny_url = data['url']
@@ -207,7 +210,7 @@ def main():
                     # TODO: convert to tiny url
                     tiny_url = tiny_url[0:132]
                 print "============> ", url[1], tiny_url, len(tiny_url)
-                upload(tiny_url, encr_stats, upld_stats)
+                upload(tiny_url, encr_stats, upld_stats, client_id)
 
     @setInterval(5)
     def get_urls():
@@ -259,7 +262,7 @@ def main():
 
     send_urls()
     get_urls()
-    time.sleep(16)
+    time.sleep(300)
     
     print_and_write('Upload', upld_stats)
     print_and_write('Encryption', encr_stats)
@@ -267,6 +270,10 @@ def main():
     print_and_write('Decryption', decr_stats)
     print_and_write('Num_download_files', durl_stats)
 
+    for i in range(0,100):
+        # Print the top 10 urls and the 10 most recent
+        print_url_stats(i, client_urls[i]['friends_urls'], client_urls[i]['most_recent'])
+    
     # @setInterval(1)
     # def foo(a):
     #     print(a)
