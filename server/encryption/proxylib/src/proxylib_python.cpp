@@ -120,13 +120,13 @@ class Proxylib{
 	CurveParams gParams;
     public:
 	Proxylib() {
-		//cout << "HELLO WORLD" << endl;
-		cout << string_to_hex("He11o World!") << endl;
-                cout << hex_to_string("486531316F20576F726C6421") << endl;
+		////cout << "HELLO WORLD" << endl;
+		//cout << string_to_hex("He11o World!") << endl;
+                //cout << hex_to_string("486531316F20576F726C6421") << endl;
 		if (initLibrary() == FALSE) {
-			cout << " ... FAILED" << endl;
+			//cout << " ... FAILED" << endl;
 		} else {
-			cout << " ... OK" << endl;
+			//cout << " ... OK" << endl;
 		}
 
 		//
@@ -135,9 +135,9 @@ class Proxylib{
             ifstream file("GenParam", ios::binary | ios::in);
             if(file) {
                 /*if (PRE1_generate_params(gParams) == FALSE) {
-                    cout << "Nope. Doesn't work." << endl;
+                    //cout << "Nope. Doesn't work." << endl;
                 } else {
-                    cout << "Maybe it worked?" << endl;
+                    //cout << "Maybe it worked?" << endl;
                 }*/
                 // Read parameters
                 int size = 0;
@@ -152,17 +152,17 @@ class Proxylib{
                 file.close();
                 gParams.deserialize(SERIALIZE_BINARY, buffer, size);
                 
-                cout << "P after: " << gParams.P << endl;
+                //cout << "P after: " << gParams.P << endl;
 
                 delete [] buffer;
             }
             else {
                 // Generate parameters
-                cout << ". Generating curve parameters";
+                //cout << ". Generating curve parameters";
                     if (PRE1_generate_params(gParams) == FALSE) {
-                            cout << " ... FAILED" << endl;
+                            //cout << " ... FAILED" << endl;
                     } else {
-                            cout << " ... OK" << endl;
+                            //cout << " ... OK" << endl;
                     }
 
                 // Save parameters
@@ -170,15 +170,15 @@ class Proxylib{
                 int size = gParams.getSerializedSize(SERIALIZE_BINARY);
                 char* buffer = new char[1000];
                 
-                cout << "bits_local: " << gParams.bits_local << endl;
-                cout << "P: " << gParams.P << endl;
+                //cout << "bits_local: " << gParams.bits_local << endl;
+                //cout << "P: " << gParams.P << endl;
                 
                 size = gParams.serialize(SERIALIZE_BINARY, buffer, 1000);
                 
                 //CurveParams newParams;
                 //newParams.deserialize(SERIALIZE_BINARY, buffer, size);
-                //cout << "equal? " << (gParams == newParams);
-                //cout << "P: " << newParams.P << endl;
+                ////cout << "equal? " << (gParams == newParams);
+                ////cout << "P: " << newParams.P << endl;
                 file << size << '\n';
                 file.write(buffer, size);
                 file.close();
@@ -195,34 +195,34 @@ class Proxylib{
                 file2.close();
                 CurveParams newParam;
                 newParam.deserialize(SERIALIZE_BINARY, buffer2, size);
-                cout << "equal? " << (gParams == newParam);
+                //cout << "equal? " << (gParams == newParam);
                 delete [] buffer;
                 */
             }
             /*Big tmp;
             char buff[10] = "Hello";
-            cout << encodePlaintextAsBig(gParams, buff, 4, tmp) << endl;
-            cout << tmp << endl;
+            //cout << encodePlaintextAsBig(gParams, buff, 4, tmp) << endl;
+            //cout << tmp << endl;
             char buff2[10];
             int msgLength = 0;
-            cout << decodePlaintextFromBig(gParams, buff2, 10, &msgLength, tmp) << endl;
+            //cout << decodePlaintextFromBig(gParams, buff2, 10, &msgLength, tmp) << endl;
             printf("%d %s\n", msgLength, buff2);
             */
 	}
         void bar(char* str) {
-            std::cout << "Hello " << std::endl;
+            std:://cout << "Hello " << std::endl;
             printf("%s\n", str);
         }
 
 	void generate_key(char* file_name) {
-          cout << ". Generating keypair 1";
+          //cout << ". Generating keypair 1";
 
           ProxyPK_PRE1 pk1;
           ProxySK_PRE1 sk1;
           if (PRE1_keygen(gParams, pk1, sk1) == FALSE) {
-            cout << " ... FAILED" << endl;
+            //cout << " ... FAILED" << endl;
           } else {
-            //cout << "\nBinary size: " << pk1.getSerializedSize(SERIALIZE_BINARY) << endl;
+            ////cout << "\nBinary size: " << pk1.getSerializedSize(SERIALIZE_BINARY) << endl;
             char buffer[1000];
             string secret_file(file_name);
             secret_file += "_s";
@@ -230,13 +230,13 @@ class Proxylib{
             public_file += "_p";
 
             int pSize = pk1.serialize(SERIALIZE_BINARY, buffer, 1000);
-            //cout << pSize << endl;
+            ////cout << pSize << endl;
             ofstream pfile(public_file.c_str(), ios::binary | ios::out);
             pfile << pSize << '\n';
             pfile.write(buffer, pSize);
             pfile.close();
             //for (int i = 0; i < pSize; i++)           
-            //    cout << (int)buffer[i] << ' ';            
+            //    //cout << (int)buffer[i] << ' ';            
             pk1.serialize(SERIALIZE_HEXASCII, buffer, 1000);
             printf("\n%s\n", buffer);
 
@@ -247,7 +247,7 @@ class Proxylib{
             sfile.close();
             sk1.serialize(SERIALIZE_HEXASCII, buffer, 1000);
             printf("\n%s\n", buffer);
-            cout << "\n ... OK" << endl;
+            //cout << "\n ... OK" << endl;
           }
 	}
 
@@ -264,9 +264,9 @@ class Proxylib{
             ECn delKey;
             // Generate a delegation key from user1->user2
             if (PRE1_delegate(gParams, pk, sk, delKey) == FALSE) {
-                cout << " ... FAILED" << endl;
+                //cout << " ... FAILED" << endl;
             } else {
-                cout << " ... OK" << endl;
+                //cout << " ... OK" << endl;
             }
             string rname(dname);
             int rSize = SerializeDelegationKey_PRE1(delKey, SERIALIZE_BINARY, buffer, 1000);
@@ -282,13 +282,13 @@ class Proxylib{
             char* buffer = new char[size*2];
             int size2 = ciphertext.serialize(SERIALIZE_BINARY, buffer, size*2);
             //for (int i = 0; i < size2; i++)           
-            //    cout << (int)buffer[i] << ' ';            
+            //    //cout << (int)buffer[i] << ' ';            
             save_file(file_name, buffer, size2);
             delete [] buffer;
         }
 
         void encrypt(char* public_key, char* plain_text, char* file_name) {
-            cout << "...Start encryption" << endl;
+            //cout << "...Start encryption" << endl;
             miracl *mip=&precision;
             Big plaintext;
             string plaintext_hex = string_to_hex(string(plain_text));
@@ -301,12 +301,12 @@ class Proxylib{
 
             ProxyCiphertext_PRE1 ciphertext;
             if (PRE1_level2_encrypt(gParams, plaintext, pk, ciphertext) == FALSE) {
-                cout << " ... FAILED ENCRYPTION" << endl;
+                //cout << " ... FAILED ENCRYPTION" << endl;
             } else {
                 // Save the ciphertext
                 save_ciphertext(ciphertext, file_name);
             }
-            cout << "...Finish encryption" << endl; 
+            //cout << "...Finish encryption" << endl; 
         }
 
         ProxyCiphertext_PRE1 read_ciphertext(char* file_name) {
@@ -314,16 +314,16 @@ class Proxylib{
             char* buffer;
             int size;
             read_file(file_name, buffer, size);
-            cout << size << endl;
+            //cout << size << endl;
             //for (int i = 0; i < size; i++)           
-            //    cout << (int)buffer[i] << ' ';            
+            //    //cout << (int)buffer[i] << ' ';            
             ciphertext.deserialize(SERIALIZE_BINARY, buffer, size);
             delete [] buffer;
             return ciphertext;
         }
 
         void reencrypt(char* del_key, char* enc_file_name, char* reenc_file_name) {
-            cout << "...Start reencryption" << endl;
+            //cout << "...Start reencryption" << endl;
             // Re-encryption/decryption test
             ProxyCiphertext_PRE1 ciphertext = read_ciphertext(enc_file_name);
             ProxyCiphertext_PRE1 newCiphertext;
@@ -331,15 +331,15 @@ class Proxylib{
             // Re-encrypt ciphertext from user1->user2 using delKey
             // We make use of the ciphertext generated in the previous test.
             if (PRE1_reencrypt(gParams, ciphertext, delKey, newCiphertext) == FALSE) {
-                cout << " ... FAILED1" << endl;
+                //cout << " ... FAILED1" << endl;
             } else {
                 save_ciphertext(newCiphertext, reenc_file_name);
             }
-            cout << "...Finish reencryption" << endl;
+            //cout << "...Finish reencryption" << endl;
         }
 
         void decrypt(char* secret_key, char* enc_file_name, char* dec_file_name) {
-            cout << "...Start decryption" << endl;
+            //cout << "...Start decryption" << endl;
             ProxySK_PRE1 sk = read_secret_key(secret_key);
             miracl *mip=&precision;
             Big plaintext = 0;
@@ -348,22 +348,22 @@ class Proxylib{
 
             // Decrypt the ciphertext
             if (PRE1_decrypt(gParams, ciphertext, sk, plaintext) == FALSE) {
-                cout << " ... FAILED" << endl;
+                //cout << " ... FAILED" << endl;
             } else {
-                cout << " ... OK" << endl;
+                //cout << " ... OK" << endl;
                 mip->IOBASE=16;
                 int size = ciphertext.getSerializedSize(SERIALIZE_BINARY);
                 char* c2 = new char[size*2];
                 c2 << plaintext;
                 string result(c2);
-                cout << hex_to_string(result) << endl;
+                //cout << hex_to_string(result) << endl;
                 ofstream dec_file(dec_file_name);
                 dec_file << hex_to_string(result);
                 dec_file.close();
                 printf("\n%s\n", c2);
                 delete [] c2;
             }
-            cout << "...Finish decryption" << endl;
+            //cout << "...Finish decryption" << endl;
         }
 };
 
