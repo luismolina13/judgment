@@ -51,7 +51,7 @@ class UploadHandler(tornado.web.RequestHandler):
         #t = datetime.datetime.fromtimestamp(re_encrypt_start).strftime('%Y-%m-%d %H:%M:%S')
         t = time.time() - re_encrypt_start
         print "Seconds for re-encryption:", t
-        with open('re-encryption_times_1_to_100.txt', 'a') as wfile:
+        with open('re-encryption_times_100_to_1.txt', 'a') as wfile:
             wfile.write("%f\n" % t)
         #proxylib.decrypt("FriendKey_s", "reencryption_file", "decryption")
 

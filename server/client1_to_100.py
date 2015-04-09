@@ -20,7 +20,7 @@ BITLY_ACCESS_TOKEN = "84b5098ee1dc11ffe4d23e0999846c62c84a49bd"
 url_threshold = 1
 proxylib = Proxylib()
 
-client_id = 0
+client_id = 78
 # Lisa's Server
 #server_url = 'http://ec2-54-178-192-75.ap-northeast-1.compute.amazonaws.com/'
 # Luis' Server
@@ -169,7 +169,7 @@ def print_and_write(name, stats):
     print name, "average:", avg
     print name, "min:", stats['min']
     print name, "max:", stats['max']
-    filename = name + "_times_1_to_100.txt"
+    filename = name + "_times_100_to_1.txt"
     with open(filename, 'a') as wfile:
         wfile.write("%d,%f,%f,%f\n" % (stats['count'], avg, stats['min'], stats['max']))
 
@@ -179,7 +179,8 @@ def main():
         client_urls[i]['most_recent'] = []
         client_urls[i]['friends_urls'] = {}
 
-    urls = parse_history('luis_history.csv')
+    urls = ['http://facebook.com']
+    #urls = parse_history('luis_history.csv')
     #urls = []#'http://he11oworld.comhe11oworld.comhe11oworld.comhe11oworld.comhe11oworld.comhe11oworld.com']#, 'http://superuser.com/questions/can-chrome-browser-history-be-exported-to-an-html-file']
 
     # count, min, max, avg
@@ -190,11 +191,12 @@ def main():
     # download file counts
     durl_stats = {'count': 0, 'min': 1000, 'max': 0, 'avg': 0.0}
 
-    @setInterval(1)
+    #@setInterval(1)
     def send_urls():
         if len(urls) == 0:
             return        
-        url_for_tiny = urls.pop(0)
+        #url_for_tiny = urls.pop(0)
+        url_for_tiny = urls[0]
         url = url_for_tiny.split("://")
         if len(url) > 1:
             if 'www.google' in url[1]:
@@ -210,7 +212,7 @@ def main():
                 print "============> ", url[1], tiny_url, len(tiny_url)
                 upload(tiny_url, encr_stats, upld_stats)
 
-    @setInterval(5)
+    #@setInterval(5)
     def get_urls():
         #client_id = randint(0,99)
         filename = download(down_stats, client_id)
@@ -258,9 +260,10 @@ def main():
         # Print the top 10 urls and the 10 most recent
         print_url_stats(client_id, client_urls[client_id]['friends_urls'], client_urls[client_id]['most_recent'])
 
-    send_urls()
+    for x in range(100):
+        send_urls()
     #get_urls()
-    time.sleep(16)
+    #time.sleep(16)
     
     print_and_write('Upload', upld_stats)
     print_and_write('Encryption', encr_stats)
