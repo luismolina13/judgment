@@ -1,0 +1,25 @@
+import csv
+import datetime
+cr = csv.reader(open("combined_history.csv", "rU"))
+temp = 0
+count = 100
+new_rows_list = []
+row1 = next(cr)
+for row in cr:
+    if temp == 377:
+        filename = "csv" + str(count) + ".csv"
+        file2 = open(filename, 'wb')
+	writer = csv.writer(file2)
+	writer.writerows(new_rows_list)
+        file2.close()        
+        count = count + 1
+        temp = 0
+        new_rows_list = []
+        new_rows_list.append(row)
+    else:
+        new_rows_list.append(row)
+	temp = temp+1
+
+
+    
+        
