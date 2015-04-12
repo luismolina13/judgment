@@ -3,6 +3,7 @@ import csv
 import datetime
 import operator
 import os
+import pprint
 import requests
 import shutil
 import threading
@@ -17,13 +18,15 @@ from proxylib import Proxylib
 from random import randint
 
 BITLY_ACCESS_TOKEN = "f25c1a18104ff2c5edf39a2a16ae8ccae4c2bedc"
-url_threshold = 1
 proxylib = Proxylib()
+pp = pprint.PrettyPrinter(indent=2)
+
+max_id = 99
 
 # Lisa's Server
-#server_url = 'http://ec2-54-178-192-75.ap-northeast-1.compute.amazonaws.com/'
+server_url = 'http://ec2-54-178-192-75.ap-northeast-1.compute.amazonaws.com/'
 # Luis' Server
-server_url = 'http://ec2-52-68-29-226.ap-northeast-1.compute.amazonaws.com/'
+#server_url = 'http://ec2-52-68-29-226.ap-northeast-1.compute.amazonaws.com/'
 
 
 def setInterval(interval, times = -1):
@@ -52,7 +55,7 @@ def setInterval(interval, times = -1):
     return outer_wrap
 
 def upload(urls, encr_stats, upld_stats, client_id):
-    #client_id = randint(0,99)
+    #client_id = randint(0,max_id)
     print 'Uploading urls for client ' + str(client_id)
     # Encrypt the file
     filename = str(uuid.uuid4())
@@ -173,11 +176,9 @@ def print_and_write(name, stats):
         wfile.write("%d,%f,%f,%f\n" % (stats['count'], avg, stats['min'], stats['max']))
 
 def main():
-    client_urls = dict.fromkeys(range(0,100), dict())
+    client_urls = {i: {'most_recent': [], 'friends_urls': {}} for i in range(0, max_id+1)}
     urls = []
-    for i in range(0, 100):
-        client_urls[i]['most_recent'] = []
-        client_urls[i]['friends_urls'] = {}
+    for i in range(0, max_id + 1):
         csv_file_name = "csv" + str(i) + ".csv"
         urls.append(parse_history(csv_file_name))
     #urls = []#'http://he11oworld.comhe11oworld.comhe11oworld.comhe11oworld.comhe11oworld.comhe11oworld.com']#, 'http://superuser.com/questions/can-chrome-browser-history-be-exported-to-an-html-file']
@@ -192,7 +193,7 @@ def main():
 
     @setInterval(1)
     def send_urls():
-        client_id = randint(0,99)
+        client_id = randint(0,max_id)
         if len(urls[client_id]) == 0:
             return        
         url_for_tiny = urls[client_id].pop(0)
@@ -214,7 +215,7 @@ def main():
 
     @setInterval(5)
     def get_urls():
-        client_id = randint(0,99)
+        client_id = randint(0,max_id)
         filename = download(down_stats, client_id)
         if not filename:
             return
@@ -262,7 +263,7 @@ def main():
 
     send_urls()
     get_urls()
-    time.sleep(300)
+    time.sleep(100)
     
     print_and_write('Upload', upld_stats)
     print_and_write('Encryption', encr_stats)
@@ -270,7 +271,8 @@ def main():
     print_and_write('Decryption', decr_stats)
     print_and_write('Num_download_files', durl_stats)
 
-    for i in range(0,100):
+    #pp.pprint(client_urls)
+    for i in range(0,max_id):
         # Print the top 10 urls and the 10 most recent
         print_url_stats(i, client_urls[i]['friends_urls'], client_urls[i]['most_recent'])
     
