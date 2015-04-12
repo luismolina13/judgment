@@ -171,7 +171,7 @@ def print_and_write(name, stats):
     print name, "average:", avg
     print name, "min:", stats['min']
     print name, "max:", stats['max']
-    filename = name + "_times_parsed_csv.txt"
+    filename = name + "_times_parsed_csv_by_name.txt"
     with open(filename, 'a') as wfile:
         wfile.write("%d,%f,%f,%f\n" % (stats['count'], avg, stats['min'], stats['max']))
 
@@ -179,7 +179,8 @@ def main():
     client_urls = {i: {'most_recent': [], 'friends_urls': {}} for i in range(0, max_id+1)}
     urls = []
     for i in range(0, max_id + 1):
-        csv_file_name = "csv" + str(i) + ".csv"
+        csv_file_name = "csv" + str(i+100) + ".csv"
+        print csv_file_name
         urls.append(parse_history(csv_file_name))
     #urls = []#'http://he11oworld.comhe11oworld.comhe11oworld.comhe11oworld.comhe11oworld.comhe11oworld.com']#, 'http://superuser.com/questions/can-chrome-browser-history-be-exported-to-an-html-file']
 
